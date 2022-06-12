@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"simple-demo/helper"
@@ -38,6 +39,10 @@ type UserResponse struct {
 	FollowCount   int64  `json:"follow_count"`
 	FollowerCount int64  `json:"follower_count"`
 	IsFollow      bool   `json:"is_follow"`
+}
+
+type UserRegisterService struct {
+	ctx context.Context
 }
 
 func Register(c *gin.Context) {
