@@ -30,6 +30,7 @@ type UserLoginResponse struct {
 	UserId   int64  `json:"user_id,omitempty"`
 	Token    string `json:"token"`
 	Username string `json:"username"`
+	Ero      error  `json:"error"`
 }
 
 type UserResponse struct {
@@ -48,10 +49,10 @@ type UserRegisterService struct {
 
 func Register(c *gin.Context) {
 	username := c.Query("username")
-	password := c.Query("password")
+	password := helper.GetMd5(c.Query("password"))
 
 	userInfo := model.User{UserName: username, Password: password}
-	password = helper.GetMd5(password)
+
 	token, _ := helper.GenerateToken(userInfo.UserName, userInfo.Password)
 
 	_, err := service.GetUserByName(userInfo.UserName)
@@ -73,7 +74,7 @@ func Register(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	username := c.Query("username")
-	password := c.Query("password")
+	password := helper.GetMd5(c.Query("password"))
 
 	userInfo := model.User{UserName: username, Password: password}
 	userid, err := service.UserLogin(&userInfo)
@@ -87,6 +88,7 @@ func Login(c *gin.Context) {
 			UserId:   userid,
 			Token:    token,
 			Username: username,
+			Ero:      err,
 		})
 	} else {
 		c.JSON(http.StatusOK, UserLoginResponse{
