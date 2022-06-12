@@ -10,26 +10,96 @@ Target Server Type    : MYSQL
 Target Server Version : 80016
 File Encoding         : 65001
 
-Date: 2022-06-11 18:42:17
+Date: 2022-06-12 11:16:10
 */
 
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------
--- Table structure for `users`
+-- Table structure for `comment`
 -- ----------------------------
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+DROP TABLE IF EXISTS `comment`;
+CREATE TABLE `comment` (
+  `comment_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `video_id` bigint(20) unsigned DEFAULT NULL,
+  `content` longtext NOT NULL,
+  `created_at` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`comment_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of comment
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `follow`
+-- ----------------------------
+DROP TABLE IF EXISTS `follow`;
+CREATE TABLE `follow` (
+  `user_id` bigint(20) unsigned NOT NULL,
+  `fan_id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`fan_id`),
+  KEY `fk_follow_fans` (`fan_id`),
+  CONSTRAINT `fk_follow_fans` FOREIGN KEY (`fan_id`) REFERENCES `user` (`userid`),
+  CONSTRAINT `fk_follow_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`userid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of follow
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `like`
+-- ----------------------------
+DROP TABLE IF EXISTS `like`;
+CREATE TABLE `like` (
+  `user_id` bigint(20) unsigned NOT NULL,
+  `video_id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`video_id`),
+  KEY `fk_like_video` (`video_id`),
+  CONSTRAINT `fk_like_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`userid`),
+  CONSTRAINT `fk_like_video` FOREIGN KEY (`video_id`) REFERENCES `video` (`video_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of like
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for `user`
+-- ----------------------------
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
+  `userid` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(191) NOT NULL,
   `password` longtext NOT NULL,
   `created_at` datetime(3) DEFAULT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
-  PRIMARY KEY (`id`),
+  `deleted_at` datetime(3) DEFAULT NULL,
+  PRIMARY KEY (`userid`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of users
+-- Records of user
 -- ----------------------------
-INSERT INTO `users` VALUES ('1', 'devin', '123456***', '2022-06-11 18:15:27.000', '2022-06-11 18:15:33.000');
+
+-- ----------------------------
+-- Table structure for `video`
+-- ----------------------------
+DROP TABLE IF EXISTS `video`;
+CREATE TABLE `video` (
+  `video_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `title` longtext NOT NULL,
+  `oss_video_id` longtext NOT NULL,
+  `created_at` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`video_id`),
+  KEY `fk_user_videos` (`user_id`),
+  CONSTRAINT `fk_user_videos` FOREIGN KEY (`user_id`) REFERENCES `user` (`userid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of video
+-- ----------------------------

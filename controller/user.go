@@ -2,12 +2,14 @@ package controller
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"simple-demo/helper"
 	"simple-demo/model"
 	"simple-demo/service"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -76,7 +78,6 @@ func Login(c *gin.Context) {
 	userInfo := model.User{UserName: username, Password: password}
 	userid, err := service.UserLogin(&userInfo)
 
-
 	password = helper.GetMd5(password)
 	token, _ := helper.GenerateToken(userInfo.UserName, userInfo.Password)
 
@@ -107,6 +108,7 @@ func UserInfo(c *gin.Context) {
 	followercount, _ := service.GetFanCount(uint(UID))
 	followcount, _ := service.GetFollowCount(uint(UID))
 	isfollow, _ := service.IsFollow(fanInfo.UserID, userInfo.UserID)
+	log.Println(UID)
 	if err == nil && UID != 0 {
 		c.JSON(http.StatusOK, UserResponse{
 			Response:      Response{StatusCode: 0},
