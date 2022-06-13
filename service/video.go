@@ -11,24 +11,44 @@ func CreateVideo(ctx context.Context, video *model.Video) error {
 	return model.DB.WithContext(ctx).Create(&video).Error
 }
 
-// GetVideoByUserID 根据用户id查视频
-func GetVideoByUserID(userID uint) ([]model.Video, error) {
-	user := model.User{UserID: userID}
-	if err := model.DB.Preload("Videos").Find(&user).Error; err != nil {
-		return nil, err
+// GetUserIDByToken 根据用户id查token
+func GetUserIDByToken(token string) (*model.Users, error) {
+	var user model.Users
+	if err := model.DB.Where("token = ?", token).First(&user).Error; err != nil {
+		return &user, err
 	}
-	return []model.Video{}, nil
+	return &user, nil
 }
 
-//// GetVideoListByUserID 根据用户id查视频
-//func GetVideoListByUserID(userID uint) ([]controller.Video, error) {
-//	userid := model.User{UserID: userID}
-//	var videoList []controller.Video
-//	if err := model.DB.Where("userid = ?", userid).Find(&videoList).Error; err != nil {
-//		return nil, err
-//	}
-//	return videoList, nil
-//}
+// GetVideoByUserID 根据用户id查视频
+func GetVideoByUserID(userID uint) ([]model.Videos, error) {
+	userid := model.Users{Id: int64(userID)}.Id
+	var videoList []model.Videos
+	if err := model.DB.Where("user_id=?", userid).Find(&videoList).Error; err != nil {
+		return nil, err
+	}
+	return videoList, nil
+}
+
+// GetVideoByLoginToken 根据用户token提供视频
+func GetVideoByLoginToken(token string) ([]model.Videos, error) {
+	userinfo, _ := GetUserIDByToken(token)
+	userid := userinfo.Id
+	var videoList []model.Videos
+	if err := model.DB.Where("user_id!=?", userid).Find(&videoList).Error; err != nil {
+		return nil, err
+	}
+	return videoList, nil
+}
+
+// GetVideoByNoLoginToken 给非登录用户提供视频
+func GetVideoByNoLoginToken() ([]model.Videos, error) {
+	var videoList []model.Videos
+	if err := model.DB.Select("*").Find(&videoList).Error; err != nil {
+		return nil, err
+	}
+	return videoList, nil
+}
 
 // GetLikeCount 返回视频点赞数
 func GetLikeCount(ctx context.Context, videoID int64) (int64, error) {
