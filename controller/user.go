@@ -44,27 +44,27 @@ type UserRegisterService struct {
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := helper.GetMd5(c.Query("password"))
-
-	userInfo := model.User{UserName: username, Password: password}
-
+ 
+	userInfo := model.User{UserName: username, Password: password} 
 	token, _ := helper.GenerateToken(userInfo.UserName, userInfo.Password)
-
+ 
 	_, err := service.GetUserByName(userInfo.UserName)
 	if err == nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
-		})
+	   c.JSON(http.StatusOK, UserLoginResponse{
+		  Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+	   })
 	} else {
-		userid, _ := service.CreateUser(&userInfo)
-
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 0},
-			UserId:   userid,
-			Token:    token,
-			Username: username,
-		})
+	   userInfo := model.User{UserName: username, Password: password, Token: token}
+	   userid, _ := service.CreateUser(&userInfo)
+ 
+	   c.JSON(http.StatusOK, UserLoginResponse{
+		  Response: Response{StatusCode: 0},
+		  UserId:   userid,
+		  Token:    token,
+		  Username: username,
+	   })
 	}
-}
+ }
 
 func Login(c *gin.Context) {
 	username := c.Query("username")
@@ -105,12 +105,10 @@ func UserInfo(c *gin.Context) {
 	followcount, _ := service.GetFollowCount(uint(UID))
 	isfollow, _ := service.IsFollow(fanInfo.UserID, userInfo.UserID)
 	log.Println(UID)
-	if err == nil && UID != 0 {
-		c.JSON(http.StatusOK, UserResponse{
-			Response:      Response{StatusCode: 0},
-			UserId:        uint(UID),
-			Token:         token,
-			Username:      userInfo.UserName,
+	var usersLoginInfo = map[string]User{
+		token: {
+			Id:            int64(UID),
+			Name:          userInfo.UserName,
 			FollowCount:   followcount,
 			FollowerCount: followercount,
 			IsFollow:      isfollow,

@@ -20,8 +20,6 @@ func TestTableCreate(t *testing.T){
 	}
 	err = db.AutoMigrate(&model.User{})
 	err = db.AutoMigrate(&model.Video{})
-	err = db.AutoMigrate(&model.Follow{})
-	err = db.AutoMigrate(&model.Comment{})
 	if err != nil {
 		t.Fatal(err)
 	}
