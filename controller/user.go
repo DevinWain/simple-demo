@@ -8,7 +8,6 @@ import (
 	"simple-demo/model"
 	"simple-demo/service"
 	"strconv"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,12 +34,7 @@ type UserLoginResponse struct {
 
 type UserResponse struct {
 	Response
-	UserId        uint   `json:"user_id,omitempty"`
-	Token         string `json:"token"`
-	Username      string `json:"username"`
-	FollowCount   int64  `json:"follow_count"`
-	FollowerCount int64  `json:"follower_count"`
-	IsFollow      bool   `json:"is_follow"`
+	UserInfo User
 }
 
 type UserRegisterService struct {
@@ -106,7 +100,7 @@ func UserInfo(c *gin.Context) {
 	FID, _ := strconv.ParseUint(fanid, 10, 32)
 
 	fanInfo := model.User{UserID: uint(FID)}
-	userInfo, err := service.GetUserByID(uint(UID))
+	userInfo, _ := service.GetUserByID(uint(UID))
 	followercount, _ := service.GetFanCount(uint(UID))
 	followcount, _ := service.GetFollowCount(uint(UID))
 	isfollow, _ := service.IsFollow(fanInfo.UserID, userInfo.UserID)
@@ -120,6 +114,13 @@ func UserInfo(c *gin.Context) {
 			FollowCount:   followcount,
 			FollowerCount: followercount,
 			IsFollow:      isfollow,
+		},
+	}
+	if user, exist := usersLoginInfo[token]; exist {
+		c.JSON(http.StatusOK, UserResponse{
+			Response: Response{StatusCode: 0},
+			UserInfo: user,
+
 		})
 	} else {
 		c.JSON(http.StatusOK, UserResponse{
