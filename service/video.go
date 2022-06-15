@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"simple-demo/model"
+	"simple-demo/helper"
 )
 
 // CreateVideo 创建视频信息
@@ -12,30 +13,28 @@ func CreateVideo(ctx context.Context, video *model.Video) error {
 }
 
 // GetVideoByUserID 根据用户id查视频
-func GetVideoByUserID(userID uint) ([]model.Video, error) {
-	user := model.User{UserID: userID}
-	if err := model.DB.Preload("Videos").Find(&user).Error; err != nil {
+// func GetVideoByUserID(userID uint) ([]model.Video, error) {
+// 	user := model.User{UserID: userID}
+// 	if err := model.DB.Preload("Videos").Find(&user).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return []model.Video{}, nil
+// }
+
+// GetVideoListByUserID 根据用户id查视频
+func GetVideoListByUserID(userID uint) ([]model.Video, error) {
+	var videoList []model.Video
+	if err := model.DB.Where("user_id = ?", userID).Find(&videoList).Error; err != nil {
 		return nil, err
 	}
-	return []model.Video{}, nil
+	return videoList, nil
 }
-
-//// GetVideoListByUserID 根据用户id查视频
-//func GetVideoListByUserID(userID uint) ([]controller.Video, error) {
-//	userid := model.User{UserID: userID}
-//	var videoList []controller.Video
-//	if err := model.DB.Where("userid = ?", userid).Find(&videoList).Error; err != nil {
-//		return nil, err
-//	}
-//	return videoList, nil
-//}
 
 // GetVideoByLoginToken 根据用户token提供视频
 func GetVideoByLoginToken(token string) ([]model.Video, error) {
-	userinfo, _ := GetUserIDByToken(token)
-	userid := userinfo.UserID
+	userID, _ := helper.GetUserIDByToken(token)
 	var videoList []model.Video
-	if err := model.DB.Raw("SELECT * FROM video WHERE user_id <> ? ORDER BY RAND() LIMIT ? ", userid, 5).Scan(&videoList).Error; err != nil {
+	if err := model.DB.Raw("SELECT * FROM video WHERE user_id <> ? ORDER BY RAND() LIMIT ? ", userID, 5).Scan(&videoList).Error; err != nil {
 		return nil, err
 	}
 	return videoList, nil
