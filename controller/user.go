@@ -1,14 +1,13 @@
 package controller
 
 import (
-	"context"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"simple-demo/helper"
 	"simple-demo/model"
 	"simple-demo/service"
 	"strconv"
+	"github.com/gin-gonic/gin"
 )
 
 // usersLoginInfo use map to store user info, and key is username+password for demo
@@ -34,25 +33,25 @@ type UserLoginResponse struct {
 type UserResponse struct {
 	Response
 	User User `json:"user"`
+
 }
 
-type UserRegisterService struct {
-	ctx context.Context
-}
+// type UserRegisterService struct {
+// 	ctx context.Context
+// }
 
 func Register(c *gin.Context) {
 	username := c.Query("username")
 	password := helper.GetMd5(c.Query("password"))
-
-	userInfo := model.User{UserName: username, Password: password}
-
-	token, _ := helper.GenerateToken(userInfo.UserName, userInfo.Password)
-
+ 
+	userInfo := model.User{UserName: username, Password: password} 
+	token, _ := helper.GenerateToken(userInfo.UserName, int(userInfo.UserID))
+ 
 	_, err := service.GetUserByName(userInfo.UserName)
 	if err == nil {
-		c.JSON(http.StatusOK, UserLoginResponse{
-			Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
-		})
+	   c.JSON(http.StatusOK, UserLoginResponse{
+		  Response: Response{StatusCode: 1, StatusMsg: "User already exist"},
+	   })
 	} else {
 		userInfo := model.User{UserName: username, Password: password, Token: token}
 		userid, _ := service.CreateUser(&userInfo)
@@ -64,16 +63,17 @@ func Register(c *gin.Context) {
 			Username: username,
 		})
 	}
-}
+ }
 
 func Login(c *gin.Context) {
 	username := c.Query("username")
 	password := helper.GetMd5(c.Query("password"))
 
 	userInfo := model.User{UserName: username, Password: password}
+
 	userid, RowsAffected := service.UserLogin(userInfo)
 
-	token, _ := helper.GenerateToken(userInfo.UserName, userInfo.Password)
+	token, _ := helper.GenerateToken(userInfo.UserName, int(userid))
 
 	if RowsAffected != 0 {
 		c.JSON(http.StatusOK, UserLoginResponse{
@@ -102,9 +102,7 @@ func UserInfo(c *gin.Context) {
 	followercount, _ := service.GetFanCount(uint(UID))
 	followcount, _ := service.GetFollowCount(uint(UID))
 	isfollow, _ := service.IsFollow(fanInfo.UserID, userInfo.UserID)
-	log.Println(followercount)
-	log.Println(followcount)
-	log.Println(isfollow)
+	log.Println(UID)
 	var usersLoginInfo = map[string]User{
 		token: {
 			Id:            int64(UID),
@@ -118,6 +116,7 @@ func UserInfo(c *gin.Context) {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User:     user,
+
 		})
 	} else {
 		c.JSON(http.StatusOK, UserResponse{

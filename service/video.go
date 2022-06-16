@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"simple-demo/model"
+	"simple-demo/helper"
 )
 
 // CreateVideo 创建视频信息
@@ -11,40 +12,58 @@ func CreateVideo(ctx context.Context, video *model.Video) error {
 	return model.DB.WithContext(ctx).Create(&video).Error
 }
 
-// GetUserIDByToken 根据用户id查token
-func GetUserIDByToken(token string) (*model.Users, error) {
-	var user model.Users
-	if err := model.DB.Where("token = ?", token).First(&user).Error; err != nil {
-		return &user, err
-	}
-	return &user, nil
-}
-
 // GetVideoByUserID 根据用户id查视频
-func GetVideoByUserID(userID uint) ([]model.Videos, error) {
-	userid := model.Users{Id: int64(userID)}.Id
-	var videoList []model.Videos
-	if err := model.DB.Where("user_id=?", userid).Find(&videoList).Error; err != nil {
+// func GetVideoByUserID(userID uint) ([]model.Video, error) {
+// 	user := model.User{UserID: userID}
+// 	if err := model.DB.Preload("Videos").Find(&user).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return []model.Video{}, nil
+// }
+
+// GetVideoListByUserID 根据用户id查视频
+func GetVideoListByUserID(userID uint) ([]model.Video, error) {
+	var videoList []model.Video
+	if err := model.DB.Where("user_id = ?", userID).Find(&videoList).Error; err != nil {
 		return nil, err
 	}
 	return videoList, nil
 }
 
 // GetVideoByLoginToken 根据用户token提供视频
-func GetVideoByLoginToken(token string) ([]model.Videos, error) {
-	userinfo, _ := GetUserIDByToken(token)
-	userid := userinfo.Id
-	var videoList []model.Videos
-	if err := model.DB.Where("user_id!=?", userid).Find(&videoList).Error; err != nil {
+func GetVideoByLoginToken(token string) ([]model.Video, error) {
+	userID, _ := helper.GetUserIDByToken(token)
+	var videoList []model.Video
+	if err := model.DB.Raw("SELECT * FROM video WHERE user_id <> ? ORDER BY RAND() LIMIT ? ", userID, 5).Scan(&videoList).Error; err != nil {
 		return nil, err
 	}
 	return videoList, nil
 }
 
 // GetVideoByNoLoginToken 给非登录用户提供视频
-func GetVideoByNoLoginToken() ([]model.Videos, error) {
-	var videoList []model.Videos
-	if err := model.DB.Select("*").Find(&videoList).Error; err != nil {
+func GetVideoByNoLoginToken() ([]model.Video, error) {
+	var videoList []model.Video
+	if err := model.DB.Raw("SELECT * FROM video ORDER BY RAND() LIMIT ? ", 5).Scan(&videoList).Error; err != nil {
+		return nil, err
+	}
+	return videoList, nil
+}
+
+// GetVideoByLoginToken 根据用户token提供视频
+func GetVideoByLoginToken(token string) ([]model.Video, error) {
+	userinfo, _ := GetUserIDByToken(token)
+	userid := userinfo.UserID
+	var videoList []model.Video
+	if err := model.DB.Raw("SELECT * FROM video WHERE user_id <> ? ORDER BY RAND() LIMIT ? ", userid, 5).Scan(&videoList).Error; err != nil {
+		return nil, err
+	}
+	return videoList, nil
+}
+
+// GetVideoByNoLoginToken 给非登录用户提供视频
+func GetVideoByNoLoginToken() ([]model.Video, error) {
+	var videoList []model.Video
+	if err := model.DB.Raw("SELECT * FROM video ORDER BY RAND() LIMIT ? ", 5).Scan(&videoList).Error; err != nil {
 		return nil, err
 	}
 	return videoList, nil
@@ -95,27 +114,12 @@ func UnLikeVideo(ctx context.Context, userID int64, videoID int64) error {
 	return model.DB.WithContext(ctx).Model(&user).Association("Likes").Delete(&video)
 }
 
-func GetLikeVideo(userID int64) ([]model.Videos, error) {
-	//var favoriteList []model.Favorites
-	//var videoList []model.Videos
-	//model.DB.Where("user_id=?", userID).Find(&favoriteList)
-	//
-	//model.DB.Table("favorites").Select("favorites.video_id,videos.user_id,videos.title,videos.play_url,videos.cover_url").
-	//	Where("favorites.user_id=?", userID).
-	//	Joins("LEFT JOIN videos ON favorites.video_id = videos.video_id").
-	//	Find(&videoList)
-
-	UserId := userID
-	var favoriteList []model.Favorites
-	var videoList []model.Videos
-	model.DB.Where("user_id=?", UserId).Find(&favoriteList)
-
-	model.DB.Table("favorites").Select("favorites.video_id,videos.user_id,videos.title,videos.play_url,videos.cover_url").
-		Where("favorites.user_id=?", UserId).
-		Joins("LEFT JOIN videos ON favorites.video_id = videos.video_id").
-		Find(&videoList)
-	//fmt.Println(videoList)
-	return videoList, nil
+func GetLikeVideo(ctx context.Context, userID int64) ([]*model.Video, error) {
+	user := model.User{UserID: uint(userID)}
+	if err := model.DB.WithContext(ctx).Preload("Likes").Find(&user).Error; err != nil {
+		return nil, err
+	}
+	return user.Likes, nil
 }
 
 // CreateComment 新增评论,需要dal层返回评论详情
