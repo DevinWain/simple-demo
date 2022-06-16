@@ -13,7 +13,7 @@ type UserClaims struct {
 	jwtgo.StandardClaims
 }
 
-var jwtkey = []byte("JjUhqZteNUhtDQfvXH9uCHhdKDmUDyAm")
+var Jwtkey = []byte("JjUhqZteNUhtDQfvXH9uCHhdKDmUDyAm")
 
 // GetMd5
 // 生成 md5
@@ -37,7 +37,7 @@ func GenerateToken(username string, userpassword string) (string, error) {
 		},
 	}
 	tokenStruct := jwtgo.NewWithClaims(jwtgo.SigningMethodHS256, UserClaim)
-	tokenString, err := tokenStruct.SignedString(jwtkey)
+	tokenString, err := tokenStruct.SignedString(Jwtkey)
 	if err != nil {
 		return "", err
 	}

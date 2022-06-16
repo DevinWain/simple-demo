@@ -9,7 +9,7 @@ import (
 type ModeTime time.Time
 
 type Model struct {
-	UUID uint	`gorm:"primaryKey"`
+	UUID uint `gorm:"primaryKey"`
 	//Time time.Time	`gorm:"column:my_time"`
 }
 type User struct {
@@ -19,8 +19,9 @@ type User struct {
 	CreatedAt ModeTime `gorm:"column:created_at"`
 	UpdatedAt ModeTime `gorm:"column:updated_at"`
 }
+
 // 建表
-func TestUserCreate(){
+func TableCreate() {
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		DSN: "root:123456@tcp(127.0.0.1:3306)/simple_demo?charset=utf8mb4&parseTime=True&loc=Local",
 	}), &gorm.Config{

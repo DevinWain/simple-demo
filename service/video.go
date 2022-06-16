@@ -95,12 +95,27 @@ func UnLikeVideo(ctx context.Context, userID int64, videoID int64) error {
 	return model.DB.WithContext(ctx).Model(&user).Association("Likes").Delete(&video)
 }
 
-func GetLikeVideo(ctx context.Context, userID int64) ([]*model.Video, error) {
-	user := model.User{UserID: uint(userID)}
-	if err := model.DB.WithContext(ctx).Preload("Likes").Find(&user).Error; err != nil {
-		return nil, err
-	}
-	return user.Likes, nil
+func GetLikeVideo(userID int64) ([]model.Videos, error) {
+	//var favoriteList []model.Favorites
+	//var videoList []model.Videos
+	//model.DB.Where("user_id=?", userID).Find(&favoriteList)
+	//
+	//model.DB.Table("favorites").Select("favorites.video_id,videos.user_id,videos.title,videos.play_url,videos.cover_url").
+	//	Where("favorites.user_id=?", userID).
+	//	Joins("LEFT JOIN videos ON favorites.video_id = videos.video_id").
+	//	Find(&videoList)
+
+	UserId := userID
+	var favoriteList []model.Favorites
+	var videoList []model.Videos
+	model.DB.Where("user_id=?", UserId).Find(&favoriteList)
+
+	model.DB.Table("favorites").Select("favorites.video_id,videos.user_id,videos.title,videos.play_url,videos.cover_url").
+		Where("favorites.user_id=?", UserId).
+		Joins("LEFT JOIN videos ON favorites.video_id = videos.video_id").
+		Find(&videoList)
+	//fmt.Println(videoList)
+	return videoList, nil
 }
 
 // CreateComment 新增评论,需要dal层返回评论详情

@@ -34,7 +34,6 @@ type UserLoginResponse struct {
 type UserResponse struct {
 	Response
 	User User `json:"user"`
-
 }
 
 type UserRegisterService struct {
@@ -119,7 +118,6 @@ func UserInfo(c *gin.Context) {
 		c.JSON(http.StatusOK, UserResponse{
 			Response: Response{StatusCode: 0},
 			User:     user,
-
 		})
 	} else {
 		c.JSON(http.StatusOK, UserResponse{
