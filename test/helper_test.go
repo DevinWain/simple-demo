@@ -7,7 +7,7 @@ import (
 )
 
 func TestHelper(t *testing.T) {
-	res, _ := helper.AnalyseToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6InRlc3QiLCJ1c2VySUQiOiIzIiwiZXhwIjoxNjU1MzE0MjA5LCJpYXQiOjE2NTUzMTA2MDksImlzcyI6IkRvdXlpbiIsInN1YiI6InVzZXJUb2tlbiJ9.WONUq8YCC4KgU9_iQIJqqZIl1Q3lC8kGL4qEMyY2FvU")
+	res, _ := helper.AnalyseToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6ImxpdXppa2FuZyIsInVzZXJJRCI6IjAiLCJleHAiOjE2NTUzNjY5MDgsImlhdCI6MTY1NTM2MzMwOCwiaXNzIjoiRG91eWluIiwic3ViIjoidXNlclRva2VuIn0.pSajjDPVhxHdFQBy9c_LXgUb1szS5aG-37Sfm1Lh9GU")
 	fmt.Println(res.UserID)
 	fmt.Println(res.UserName)
 }
