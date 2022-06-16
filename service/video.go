@@ -12,15 +12,6 @@ func CreateVideo(ctx context.Context, video *model.Video) error {
 	return model.DB.WithContext(ctx).Create(&video).Error
 }
 
-// GetVideoByUserID 根据用户id查视频
-// func GetVideoByUserID(userID uint) ([]model.Video, error) {
-// 	user := model.User{UserID: userID}
-// 	if err := model.DB.Preload("Videos").Find(&user).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return []model.Video{}, nil
-// }
-
 // GetVideoListByUserID 根据用户id查视频
 func GetVideoListByUserID(userID uint) ([]model.Video, error) {
 	var videoList []model.Video
@@ -81,25 +72,37 @@ func GetVideoByTime(latestTime int64, count int64) ([]*model.Video, int64, error
 }
 
 // LikeVideo 点赞视频
-func LikeVideo(ctx context.Context, userID int64, videoID int64) error {
+func LikeVideo(userID int64, videoID int64) error {
+
 	user := model.User{UserID: uint(userID)}
 	video := model.Video{VideoID: uint(videoID)}
-	return model.DB.WithContext(ctx).Model(&user).Association("Likes").Append(&video)
+	err := model.DB.Model(&user).Association("Likes").Append(&video)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // UnLikeVideo 取消点赞视频
-func UnLikeVideo(ctx context.Context, userID int64, videoID int64) error {
+func UnLikeVideo(userID int64, videoID int64) error {
 	user := model.User{UserID: uint(userID)}
 	video := model.Video{VideoID: uint(videoID)}
-	return model.DB.WithContext(ctx).Model(&user).Association("Likes").Delete(&video)
+	err := model.DB.Model(&user).Association("Likes").Delete(&video)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func GetLikeVideo(ctx context.Context, userID int64) ([]*model.Video, error) {
-	user := model.User{UserID: uint(userID)}
-	if err := model.DB.WithContext(ctx).Preload("Likes").Find(&user).Error; err != nil {
-		return nil, err
-	}
-	return user.Likes, nil
+func GetLikeVideo(userID int64) ([]model.Video, error) {
+	var videoList []model.Video
+
+	model.DB.Table("like").Select("like.video_id,video.user_id,video.title,video.play_url,video.cover_url").
+		Where("like.user_id=?", userID).
+		Joins("LEFT JOIN video ON like.video_id = video.video_id").
+		Find(&videoList)
+
+	return videoList, nil
 }
 
 // CreateComment 新增评论,需要dal层返回评论详情
