@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"simple-demo/model"
 )
 
@@ -53,23 +52,23 @@ func GetUserByName(userName string) (*model.User, error) {
 }
 
 //FollowUser 根据传入的两个用户id  执行用户A关注用户B操作
-func FollowUser(ctx context.Context, fanID, userID int64) error {
+func FollowUser(fanID, userID int64) error {
 	fan := model.User{UserID: uint(fanID)}
 	user := model.User{UserID: uint(userID)}
-	return model.DB.WithContext(ctx).Model(&user).Association("Fans").Append(&fan)
+	return model.DB.Model(&user).Association("Fans").Append(&fan)
 }
 
 //UnFollowUser 根据传入的两个用户id  执行用户A取消关注用户B操作
-func UnFollowUser(ctx context.Context, fanID, userID int64) error {
+func UnFollowUser(fanID, userID int64) error {
 	fan := model.User{UserID: uint(fanID)}
 	user := model.User{UserID: uint(userID)}
-	return model.DB.WithContext(ctx).Model(&user).Association("Fans").Delete(&fan)
+	return model.DB.Model(&user).Association("Fans").Delete(&fan)
 }
 
 // GetFanUser 根据userID 获取该用户的粉丝ID列表
-func GetFanUser(ctx context.Context, userID int64) ([]int64, error) {
+func GetFanUser(userID int64) ([]int64, error) {
 	user := model.User{UserID: uint(userID)}
-	if err := model.DB.WithContext(ctx).Model(&user).Association("Fans").Find(&user.Fans); err != nil {
+	if err := model.DB.Model(&user).Association("Fans").Find(&user.Fans); err != nil {
 		return nil, err
 	}
 	fanIDs := make([]int64, len(user.Fans))
@@ -80,9 +79,9 @@ func GetFanUser(ctx context.Context, userID int64) ([]int64, error) {
 }
 
 // GetFollowUser 根据userID 获取这个用户所关注的用户ID列表
-func GetFollowUser(ctx context.Context, fanID int64) ([]int64, error) {
+func GetFollowUser(fanID int64) ([]int64, error) {
 	var follows []*model.Follow
-	if err := model.DB.WithContext(ctx).Where("fan_id = ?", fanID).Find(&follows).Error; err != nil {
+	if err := model.DB.Where("fan_id = ?", fanID).Find(&follows).Error; err != nil {
 		return nil, err
 	}
 	userIDs := make([]int64, len(follows))
