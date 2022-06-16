@@ -34,6 +34,7 @@ func UserLogin(userInfo model.User) (int64, int64) {
 // 	return &user, nil
 // }
 
+
 //GetUserByID 需要通过用户ID查询用户信息
 func GetUserByID(userID uint) (*model.User, error) {
 	var user model.User
