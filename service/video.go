@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"math"
-	"simple-demo/model"
 	"simple-demo/helper"
+	"simple-demo/model"
 )
 
 // CreateVideo 创建视频信息
@@ -35,26 +35,6 @@ func GetVideoByLoginToken(token string) ([]model.Video, error) {
 	userID, _ := helper.GetUserIDByToken(token)
 	var videoList []model.Video
 	if err := model.DB.Raw("SELECT * FROM video WHERE user_id <> ? ORDER BY RAND() LIMIT ? ", userID, 5).Scan(&videoList).Error; err != nil {
-		return nil, err
-	}
-	return videoList, nil
-}
-
-// GetVideoByNoLoginToken 给非登录用户提供视频
-func GetVideoByNoLoginToken() ([]model.Video, error) {
-	var videoList []model.Video
-	if err := model.DB.Raw("SELECT * FROM video ORDER BY RAND() LIMIT ? ", 5).Scan(&videoList).Error; err != nil {
-		return nil, err
-	}
-	return videoList, nil
-}
-
-// GetVideoByLoginToken 根据用户token提供视频
-func GetVideoByLoginToken(token string) ([]model.Video, error) {
-	userinfo, _ := GetUserIDByToken(token)
-	userid := userinfo.UserID
-	var videoList []model.Video
-	if err := model.DB.Raw("SELECT * FROM video WHERE user_id <> ? ORDER BY RAND() LIMIT ? ", userid, 5).Scan(&videoList).Error; err != nil {
 		return nil, err
 	}
 	return videoList, nil
@@ -114,12 +94,15 @@ func UnLikeVideo(ctx context.Context, userID int64, videoID int64) error {
 	return model.DB.WithContext(ctx).Model(&user).Association("Likes").Delete(&video)
 }
 
-func GetLikeVideo(ctx context.Context, userID int64) ([]*model.Video, error) {
-	user := model.User{UserID: uint(userID)}
-	if err := model.DB.WithContext(ctx).Preload("Likes").Find(&user).Error; err != nil {
-		return nil, err
-	}
-	return user.Likes, nil
+func GetLikeVideo(userID int64) ([]model.Video, error) {
+	var videoList []model.Video
+
+	model.DB.Table("favorites").Select("favorites.video_id,video.user_id,video.title,video.play_url,video.cover_url").
+		Where("favorites.user_id=?", userID).
+		Joins("LEFT JOIN video ON favorites.video_id = video.video_id").
+		Find(&videoList)
+
+	return videoList, nil
 }
 
 // CreateComment 新增评论,需要dal层返回评论详情

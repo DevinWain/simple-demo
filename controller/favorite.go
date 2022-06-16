@@ -19,16 +19,6 @@ func FavoriteAction(c *gin.Context) {
 	}
 }
 
-// FavoriteList 点赞列表 所有用户都有相同的收藏夹视频列表
-//func FavoriteList(c *gin.Context) {
-//	c.JSON(http.StatusOK, VideoListResponse{
-//		Response: Response{
-//			StatusCode: 0,
-//		},
-//		VideoList: DemoVideos,
-//	})
-//}
-
 func FavoriteList(c *gin.Context) {
 	userid := c.Query("user_id")
 	UID, _ := strconv.ParseUint(userid, 10, 32)
@@ -40,13 +30,14 @@ func FavoriteList(c *gin.Context) {
 			StatusMsg:  "You haven't logged in yet",
 		})
 	} else {
-		videoList, err := service.GetLikeVideo(int64(UID))
+		videoList_, err := service.GetLikeVideo(int64(UID))
+		videoList, err := GenerateVideo(videoList_)
 		log.Println(videoList)
 		log.Println(err)
 		log.Println(UID)
 		c.JSON(http.StatusOK, FeedResponse{
-			Response:       Response{StatusCode: 0, StatusMsg: "Get success"},
-			ModelVideoList: videoList,
+			Response:  Response{StatusCode: 0, StatusMsg: "Get success"},
+			VideoList: videoList,
 		})
 	}
 
