@@ -27,12 +27,16 @@ import (
 // }
 
 func TestGetOne(t *testing.T) {
-	var res *model.User
-	res, err := service.GetUserByID(5)
+	var res []*model.Comment
+	res, err := service.GetComment(1)
+	// err := service.DeleteComment(2)
+
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(*res)
+	for _, v := range res {
+		fmt.Println(*&v)
+	}
 
 }
 
