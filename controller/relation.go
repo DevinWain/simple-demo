@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"simple-demo/helper"
 	"simple-demo/model"
 	"simple-demo/service"
 	"strconv"
@@ -14,18 +15,52 @@ type UserListResponse struct {
 	UserList []User `json:"user_list"`
 }
 
-// RelationAction no practical effect, just check if token is valid
+// RelationAction 登录用户对其他用户进行关注或取消关注
 func RelationAction(c *gin.Context) {
 	token := c.Query("token")
+	//userid := c.Query("user_id")
+	fanid := c.Query("to_user_id")
+	actionType := c.Query("action_type")
 
-	if _, exist := usersLoginInfo[token]; exist {
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
+	UID, _ := helper.GetUserIDByToken(token)
+	//UID, _ := strconv.ParseUint(userid, 10, 32)
+	FID, _ := strconv.ParseUint(fanid, 10, 32)
+
+	if token == "" {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  "You haven't logged in yet",
+		})
 	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+		if actionType == "1" {
+			err := service.FollowUser(int64(FID), int64(UID))
+			if err != nil {
+				return
+			}
+			log.Println(UID)
+			log.Println(FID)
+			log.Println(err)
+
+			c.JSON(http.StatusOK, Response{StatusCode: 0, StatusMsg: "关注成功"})
+
+		} else if actionType == "2" {
+			err := service.UnFollowUser(int64(FID), int64(UID))
+			if err != nil {
+				return
+			}
+			log.Println(UID)
+			log.Println(FID)
+			log.Println(err)
+
+			c.JSON(http.StatusOK, Response{
+				StatusCode: 0,
+				StatusMsg:  "取关成功",
+			})
+		}
 	}
 }
 
-// FollowList all users have same follow list
+// FollowList 登录用户关注的所有用户列表
 func FollowList(c *gin.Context) {
 	token := c.Query("token")
 	userid := c.Query("user_id")
@@ -49,7 +84,7 @@ func FollowList(c *gin.Context) {
 	}
 }
 
-// FollowerList all users have same follower list
+// FollowerList 登录用户的粉丝列表
 func FollowerList(c *gin.Context) {
 	token := c.Query("token")
 	userid := c.Query("user_id")
