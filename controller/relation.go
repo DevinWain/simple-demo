@@ -35,9 +35,6 @@ func RelationAction(c *gin.Context) {
 			if err != nil {
 				return
 			}
-			log.Println(UID)
-			log.Println(FID)
-			log.Println(err)
 
 			c.JSON(http.StatusOK, Response{StatusCode: 0, StatusMsg: "关注成功"})
 
@@ -46,9 +43,6 @@ func RelationAction(c *gin.Context) {
 			if err != nil {
 				return
 			}
-			log.Println(UID)
-			log.Println(FID)
-			log.Println(err)
 
 			c.JSON(http.StatusOK, Response{
 				StatusCode: 0,

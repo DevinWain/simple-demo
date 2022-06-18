@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"simple-demo/helper"
 	"simple-demo/model"
